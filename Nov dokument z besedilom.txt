@@ -1,185 +1,254 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 import numpy as np
-podatki = np.array([[2, 6, 2, 8],
-                            [4, 8, 6, 6],
-                            [8, 2, 4, 4],
-                            [6, 4, 8, 2]], dtype=np.uint8)
-
-
 def bayer_v_rgb(slika_bayer, vzorec, interpoliraj=False):
-    sizex = int((len(slika_bayer))/2)
-    sizey = int((len(slika_bayer[0]))/2)
-    slika_rgb = np.empty((sizex, sizey, 3), np.ndarray)
-    if vzorec == "RGGB":
-        r = slika_bayer[0::2, 0::2]
-        b = slika_bayer[1::2, 1::2]
-        g1 = slika_bayer[0::2, 1::2]
-        g2 = slika_bayer[1::2, 0::2]
-        g1 = g1.astype(np.int)
-        g2 = g2.astype(np.int)
-        g = np.add(g1, g2) / 2
-        g = g.astype(np.uint8)
-        slika_rgb[::, ::, 0] = r
-        slika_rgb[::, ::, 1] = g
-        slika_rgb[::, ::, 2] = b
-
-    if vzorec == "BGGR":
-        r = slika_bayer[0::2, 0::2]
-        b = slika_bayer[1::2, 1::2]
-        g1 = slika_bayer[0::2, 1::2]
-        g2 = slika_bayer[1::2, 0::2]
-        g1 = g1.astype(np.int)
-        g2 = g2.astype(np.int)
-        g = np.add(g1, g2) / 2
-        g = g.astype(np.uint8)
-        slika_rgb[::, ::, 0] = b
-        slika_rgb[::, ::, 1] = g
-        slika_rgb[::, ::, 2] = r
-
-    if vzorec == "GBRG":
-        r = slika_bayer[0::2, 0::2]
-        b = slika_bayer[1::2, 1::2]
-        g1 = slika_bayer[0::2, 1::2]
-        g2 = slika_bayer[1::2, 0::2]
-
-        r = r.astype(np.int)
-        b = b.astype(np.int)
-        br = np.add(b, r) / 2
-        br = br.astype(np.uint8)
-        slika_rgb[::, ::, 0] = g2
-        slika_rgb[::, ::, 1] = br
-        slika_rgb[::, ::, 2] = g1
-
-    if vzorec == "GRBG":
-        r = slika_bayer[0::2, 0::2]
-        b = slika_bayer[1::2, 1::2]
-        g1 = slika_bayer[0::2, 1::2]
-        g2 = slika_bayer[1::2, 0::2]
-
-        r = r.astype(np.int)
-        b = b.astype(np.int)
-        rb = np.add(r, b) / 2
-        rb = br.astype(np.uint8)
-        slika_rgb[::, ::, 0] = g2
-        slika_rgb[::, ::, 1] = rb
-        slika_rgb[::, ::, 2] = g1
-
-    if interpoliraj == "true":
-        slika_rgb = np.empty(
-            (len(slika_bayer), len(slika_bayer[0]), 3), np.ndarray)
-        if vzorec == "RGGB":
+    if interpoliraj == True:
+        slika_rgb = np.empty((len(slika_bayer), len(slika_bayer[0]),3), np.ndarray)
+        if vzorec == 'RGGB':
             bg = 0
             gr = 0
+            bg1 = 0
+            gr1 = 0
 
-            for x in range(0,len(slika_bayer)):
-                for y in  range(0,len(slika_bayer[0])):
-                    if x == 0 and y==0:
-                        r = slika_bayer[x][y]
-                        g = (slika_bayer[x+1][y]+slika_bayer[x][y+1])/2
-                        b = slika_bayer[x+1][y+1]
-                        i = [r, g, b]
-                        slika_rgb[x][y]=i
-                        
-                    if x == 0 and y==len(slika_bayer[0]):
-                        g = slika_bayer[x][y]
-                        r = slika_bayer[x][y-1]
-                        b = slika_bayer[x+1][y]
-                        i = [r, g, b]
-                        slika_rgb[x][y]=i
-                        
-                    if y == 0 and x==len(slika_bayer):
-                        g = slika_bayer[x][y]
-                        r = slika_bayer[x-1][y]
-                        b = slika_bayer[x][y+1]
-                        i = [r, g, b]
-                        slika_rgb[x][y]=i  
-                        
-                    if y == len(slika_bayer[0]) and x==len(slika_bayer):
-                        b = slika_bayer[x][y]
-                        r = slika_bayer[x-1][y-1]
-                        g = (slika_bayer[x][y-1]+slika_bayer[x-1][y])/2
-                        i = [r, g, b]
-                        slika_rgb[x][y]=i    
-
-                    if x == 0 and y>0:
-                        if gr == 0:
-                            g = slika_bayer[x][y]
-                            r = 0
-                            b = 0
-                            i = [r, g, b]
-                            slika_rgb[x][y]=i 
-                            gr=gr+1
-                        if gr==1:
+            for x in range(0, len(slika_bayer)):
+                for y in range(0, len(slika_bayer[0])):
+                    if x == 0:
+                        if y == 0:
                             r = slika_bayer[x][y]
-                            g = 0
-                            b = 0
+                            g = np.uint8((slika_bayer[x + 1][y]
+                                    + slika_bayer[x][y + 1]) / 2)
+                            b = slika_bayer[x + 1][y + 1]
                             i = [r, g, b]
-                            slika_rgb[x][y]=i 
-                            gr=0
-                            
-                        
+                            slika_rgb[x][y] = i
+                        elif y == len(slika_bayer[0]) - 1:
 
-                    elif y == 0 and x>0:
-                        if bg == 0:
                             g = slika_bayer[x][y]
-                            r = 0
-                            b = 0
+                            r = slika_bayer[x][y - 1]
+                            b = slika_bayer[x + 1][y]
                             i = [r, g, b]
-                            slika_rgb[x][y]=i 
-                            bg=bg+1
-                        if bg==1:
-                            r = slika_bayer[x][y]
-                            g = 0
-                            b = 0
-                            i = [r, g, b]
-                            slika_rgb[x][y]=i 
-                            bg=0
+                            slika_rgb[x][y] = i
+                        else:
 
-                    elif y == len(slika_bayer[0]):
-                        pass
-                    elif x == len(slika_bayer):
-                        pass
-
-                    if x>0 and y>0:
-                        if y % 2 == 0:
                             if gr == 0:
                                 g = slika_bayer[x][y]
-                                b = 0
-                                r = 0
+                                r = np.uint8((slika_bayer[x][y - 1]
+                                        + slika_bayer[x][y + 1]) / 2)
+                                b = slika_bayer[x + 1][y]
                                 i = [r, g, b]
-                                slika_rgb[x][y]=i
-                                gr = gr+1
-                            if gr == 1:
+                                slika_rgb[x][y] = i
+                                gr = gr + 1
+                            elif gr == 1:
                                 r = slika_bayer[x][y]
-                                b = 0
-                                z = 0
+                                g = np.uint8((slika_bayer[x][y - 1]
+                                        + slika_bayer[x][y + 1]
+                                        + slika_bayer[x + 1][y]) / 3)
+                                b = np.uint8((slika_bayer[x + 1][y - 1]
+                                        + slika_bayer[x + 1][y + 1])
+                                        / 2)
                                 i = [r, g, b]
-                                slika_rgb[x][y]=i
+                                slika_rgb[x][y] = i
                                 gr = 0
-                           
+                    elif x == len(slika_bayer) - 1:
+
+                        if y == 0:
+                            g = slika_bayer[x][y]
+                            r = slika_bayer[x - 1][y]
+                            b = slika_bayer[x][y + 1]
+                            i = [r, g, b]
+                            slika_rgb[x][y] = i
+                        elif y == len(slika_bayer[0]) - 1:
+
+                            b = slika_bayer[x][y]
+                            r = slika_bayer[x - 1][y - 1]
+                            g = np.uint8((slika_bayer[x][y - 1]
+                                    + slika_bayer[x - 1][y]) / 2)
+                            i = [r, g, b]
+                            slika_rgb[x][y] = i
                         else:
+
                             if bg == 0:
                                 b = slika_bayer[x][y]
-                                g = 0
-                                r = 0
+                                r = np.uint8((slika_bayer[x - 1][y - 1]
+                                        + slika_bayer[x - 1][y + 1])
+                                        / 2)
+                                g = np.uint8((slika_bayer[x][y - 1]
+                                        + slika_bayer[x][y + 1]
+                                        + slika_bayer[x - 1][y]) / 3)
                                 i = [r, g, b]
-                                slika_rgb[x][y]=i
-                            bg = bg+1
-                            if bg == 1:
+                                slika_rgb[x][y] = i
+                                bg = bg + 1
+                            elif bg == 1:
                                 g = slika_bayer[x][y]
-                                r = 0
-                                b = 0
+                                b = np.uint8((slika_bayer[x][y - 1]
+                                        + slika_bayer[x][y + 1]) / 2)
+                                r = slika_bayer[x - 1][y]
                                 i = [r, g, b]
-                                slika_rgb[x][y]=i
+                                slika_rgb[x][y] = i
                                 bg = 0
+                    elif y == 0:
 
-            bg=0
-            gr=0
-    print(slika_rgb[:, :, 0])
-    print(slika_rgb[:, :, 1])
-    print(slika_rgb[:, :, 2])
+                        if x == 0:
+                            pass
+                        elif x == len(slika_bayer) - 1:
+                            pass
+                        elif gr == 0:
 
+                            g = slika_bayer[x][y]
+                            r = np.uint8((slika_bayer[x - 1][y]
+                                    + slika_bayer[x + 1][y]) / 2)
+                            b = slika_bayer[x][y + 1]
+                            i = [r, g, b]
+                            slika_rgb[x][y] = i
+                            gr = gr + 1
+                        elif gr == 1:
+                            r = slika_bayer[x][y]
+                            b = np.uint8((slika_bayer[x - 1][y + 1]
+                                    + slika_bayer[x + 1][y + 1]) / 2)
+                            g = np.uint8((slika_bayer[x - 1][y]
+                                    + slika_bayer[x + 1][y]
+                                    + slika_bayer[x][y + 1]) / 3)
+                            i = [r, g, b]
+                            slika_rgb[x][y] = i
+                            gr = 0
+                    elif y == len(slika_bayer[0]) - 1:
 
+                        if x == 0:
+                            pass
+                        elif x == len(slika_bayer) - 1:
+                            pass
+                        elif bg == 0:
 
+                            b = slika_bayer[x][y]
+                            r = np.uint8((slika_bayer[x - 1][y - 1]
+                                    + slika_bayer[x - 1][y - 1]) / 2)
+                            g = np.uint8((slika_bayer[x][y - 1]
+                                    + slika_bayer[x - 1][y]
+                                    + slika_bayer[x + 1][y - 1]) / 3)
+                            i = [r, g, b]
+                            slika_rgb[x][y] = i
+                            bg = bg + 1
+                        elif bg == 1:
+                            g = slika_bayer[x][y]
+                            b = np.uint8((slika_bayer[x - 1][y]
+                                    + slika_bayer[x + 1][y]) / 2)
+                            r = slika_bayer[x][y - 1]
+                            i = [r, g, b]
+                            slika_rgb[x][y] = i
+                            bg = 0
+                    else:
 
+                        if x % 2 == 0:
+                            if gr1 == 0:
+                                g = slika_bayer[x][y]
+                                b = np.uint8((slika_bayer[x - 1][y]
+                                        + slika_bayer[x + 1][y]) / 2)
+                                r = np.uint8((slika_bayer[x][y - 1]
+                                        + slika_bayer[x][y + 1]) / 2)
+                                i = [r, g, b]
+                                slika_rgb[x][y] = i
+                                gr1 = gr1 + 1
+                            elif gr1 == 1:
+                                r = slika_bayer[x][y]
+                                b = np.uint8((slika_bayer[x - 1][y - 1]
+                                        + slika_bayer[x + 1][y + 1]
+                                        + slika_bayer[x + 1][y - 1]
+                                        + slika_bayer[x - 1][y + 1])
+                                        / 4)
+                                g = np.uint8((slika_bayer[x - 1][y]
+                                        + slika_bayer[x + 1][y]
+                                        + slika_bayer[x][y - 1]
+                                        + slika_bayer[x][y + 1]) / 4)
+                                i = [r, g, b]
+                                slika_rgb[x][y] = i
+                                gr1 = 0
+                        else:
 
-bayer_v_rgb(podatki, "RGGB","true")
+                            if bg1 == 0:
+                                b = slika_bayer[x][y]
+                                g = np.uint8((slika_bayer[x - 1][y]
+                                        + slika_bayer[x + 1][y]
+                                        + slika_bayer[x][y - 1]
+                                        + slika_bayer[x][y + 1]) / 4)
+                                r = np.uint8((slika_bayer[x - 1][y - 1]
+                                        + slika_bayer[x + 1][y + 1]
+                                        + slika_bayer[x + 1][y - 1]
+                                        + slika_bayer[x - 1][y + 1])
+                                        / 4)
+                                i = [r, g, b]
+                                slika_rgb[x][y] = i
+                                bg1 = bg1 + 1
+                            elif bg1 == 1:
+
+                                g = slika_bayer[x][y]
+                                r = np.uint8((slika_bayer[x - 1][y]
+                                        + slika_bayer[x + 1][y]) / 2)
+                                b = np.uint8((slika_bayer[x][y - 1]
+                                        + slika_bayer[x][y + 1]) / 2)
+                                i = [r, g, b]
+                                slika_rgb[x][y] = i
+                                bg1 = 0
+
+            bg = 0
+            gr = 0
+            bg1 = 0
+            gr1 = 0
+        return slika_rgb
+    else:
+            sizex = int(len(slika_bayer) / 2)
+            sizey = int(len(slika_bayer[0]) / 2)
+            slika_rgb = np.empty((sizex, sizey, 3), np.ndarray)
+            if vzorec == 'RGGB':
+                r = slika_bayer[0::2, 0::2]
+                b = slika_bayer[1::2, 1::2]
+                g1 = slika_bayer[0::2, 1::2]
+                g2 = slika_bayer[1::2, 0::2]
+                g1 = g1.astype(np.int)
+                g2 = g2.astype(np.int)
+                g = np.add(g1, g2) / 2
+                g = g.astype(np.uint8)
+                slika_rgb[::, ::, 0] = r
+                slika_rgb[::, ::, 1] = g
+                slika_rgb[::, ::, 2] = b
+
+            if vzorec == 'BGGR':
+                r = slika_bayer[0::2, 0::2]
+                b = slika_bayer[1::2, 1::2]
+                g1 = slika_bayer[0::2, 1::2]
+                g2 = slika_bayer[1::2, 0::2]
+                g1 = g1.astype(np.int)
+                g2 = g2.astype(np.int)
+                g = np.add(g1, g2) / 2
+                g = g.astype(np.uint8)
+                slika_rgb[::, ::, 0] = b
+                slika_rgb[::, ::, 1] = g
+                slika_rgb[::, ::, 2] = r
+
+            if vzorec == 'GBRG':
+                r = slika_bayer[0::2, 0::2]
+                b = slika_bayer[1::2, 1::2]
+                g1 = slika_bayer[0::2, 1::2]
+                g2 = slika_bayer[1::2, 0::2]
+
+                r = r.astype(np.int)
+                b = b.astype(np.int)
+                br = np.add(b, r) / 2
+                br = br.astype(np.uint8)
+                slika_rgb[::, ::, 0] = g2
+                slika_rgb[::, ::, 1] = br
+                slika_rgb[::, ::, 2] = g1
+
+            if vzorec == 'GRBG':
+                r = slika_bayer[0::2, 0::2]
+                b = slika_bayer[1::2, 1::2]
+                g1 = slika_bayer[0::2, 1::2]
+                g2 = slika_bayer[1::2, 0::2]
+
+                r = r.astype(np.int)
+                b = b.astype(np.int)
+                rb = np.add(r, b) / 2
+                rb = br.astype(np.uint8)
+                slika_rgb[::, ::, 0] = g2
+                slika_rgb[::, ::, 1] = rb
+                slika_rgb[::, ::, 2] = g1
+                
+    return slika_rgb
