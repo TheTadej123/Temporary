@@ -3,7 +3,7 @@
 import numpy as np
 def bayer_v_rgb(slika_bayer, vzorec, interpoliraj=False):
     if interpoliraj == True:
-        slika_rgb = np.empty((len(slika_bayer), len(slika_bayer[0]),3), np.ndarray)
+        slika_rgb = np.empty((len(slika_bayer), len(slika_bayer[0]),3), np.uint8)
         if vzorec == 'RGGB':
             bg = 0
             gr = 0
@@ -196,7 +196,7 @@ def bayer_v_rgb(slika_bayer, vzorec, interpoliraj=False):
     else:
             sizex = int(len(slika_bayer) / 2)
             sizey = int(len(slika_bayer[0]) / 2)
-            slika_rgb = np.empty((sizex, sizey, 3), np.ndarray)
+            slika_rgb = np.empty((sizex, sizey, 3),np.uint8)
             if vzorec == 'RGGB':
                 r = slika_bayer[0::2, 0::2]
                 b = slika_bayer[1::2, 1::2]
@@ -246,9 +246,15 @@ def bayer_v_rgb(slika_bayer, vzorec, interpoliraj=False):
                 r = r.astype(np.int)
                 b = b.astype(np.int)
                 rb = np.add(r, b) / 2
-                rb = br.astype(np.uint8)
-                slika_rgb[::, ::, 0] = g2
+                rb = rb.astype(np.uint8)
+                slika_rgb[::, ::, 0] = g1
                 slika_rgb[::, ::, 1] = rb
-                slika_rgb[::, ::, 2] = g1
+                slika_rgb[::, ::, 2] = g2
                 
     return slika_rgb
+podatki = np.array(
+            [[110, 150, 220, 230, 110, 180],
+             [120, 160, 210, 240, 150, 140],
+             [130, 170, 200, 250, 120, 170],
+             [140, 180, 190, 250, 160, 130]], dtype=np.uint8)
+bayer_v_rgb(podatki, 'RGGB',True)
