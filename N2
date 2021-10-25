@@ -1,0 +1,43 @@
+#include <iostream>
+#include <vector>
+#include <chrono>
+#include <thread>
+using namespace std;
+
+int Ck(vector<int> a, int k)
+{
+    int out=0;
+    for(int i=1;i<a.size()-k;i++){
+        out=out+a[i]+a[i+k];
+    }
+    return out;
+    
+}
+int PSL(vector<int> a){
+    int max=0;
+    for(int k=1;k<a.size();k++){
+    int val=Ck(a,k);
+       if(val>max){
+           max=val;
+       }
+    }
+}
+double MF(vector<int>a){
+    int vsota=0;
+    for(int k=1;k<a.size()-1;k++){
+        int val=Ck(a,k);
+        vsota=vsota+val^2;
+    }
+    vsota=vsota*2;
+    double out=(a.size()^2)/(vsota);
+    return out;
+}
+
+
+
+
+int main()
+{
+
+    
+}
