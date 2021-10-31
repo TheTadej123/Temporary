@@ -20,20 +20,20 @@ void sestevanje(vector<double> a, vector<double> b, int begin, int end)
 void skalarniProdukt(vector<double> a, vector<double> b, int begin, int end)
 {
 
-    for (int i = 0; i < a.size(); i++)
+    for (int i = begin; i < end; i++)
     {
         vsota += a[i] + b[i];
     }
 }
 
-void produkt(vector<vector<double>> a, vector<vector<double>> b)
+void produkt(vector<vector<double>> a, vector<vector<double>> b,int begin, int end)
 {
 
-    for (int i = 0; i < a.size(); i++)
+    for (int i = begin; i < end; i++)
     {
-        for (int j = 0; j < b[i].size(); j++)
+        for (int j = 0; j < a.size(); j++)
         {
-            for (int k = 0; k < a[i].size(); k++)
+            for (int k = 0; k < a.size(); k++)
             {
                 c2[i][j] += a[i][k] * b[j][k];
             }
@@ -55,9 +55,9 @@ int main()
     vector<double> a;
     vector<double> b;
 
-    vector<double> a2;
-    vector<double> b2;
-    if (type == 1)
+    vector<vector<double>> a2;
+    vector<vector<double>> b2;
+    if (type == 1|| type==2)
     {
         for (int i = 0; i < size; i++)
         {
@@ -81,14 +81,15 @@ int main()
             a2.push_back(c1);
             b2.push_back(c1);
         }
-        c2.resize(size);
+        c2.resize(size,vector<double> (size,0));
     }
 
-    int n4 = a.size() / 4;
-    int n8 = a.size() / 8;
+
+    int n4 = size / 4;
+    int n8 = size / 8;
     if (type == 1)
     {
-        for (int i = 0; i < 1000000; i++)
+        for (int i = 0; i < 100000; i++)
         {
             if (threads == 1)
             {
@@ -141,7 +142,7 @@ int main()
     }
     if (type == 2)
     {
-        for (int i = 0; i < 1000000; i++)
+        for (int i = 0; i < 100000; i++)
         {
             if (threads == 1)
             {
@@ -194,26 +195,17 @@ int main()
     }
     if (type = 3)
     {
-        for (int i = 0; i < 1000000; i++)
+        for (int i = 0; i < 100000; i++)
         {
             if (threads == 1)
             {
-                std::thread t1(produkt, a, b, 0, a.size());
+                std::thread t1(produkt, a2, b2,0, a2.size());
                 t1.join();
-                for (int i = 0; i < c2.size(); i++)
-                {
-                    for (int j = 0; j < c2[i].size(); j++)
-                    {
-                        cout << c2[i][j];
-                    }
-                    cout << endl;
-                }
             }
-
             if (threads == 2)
             {
-                std::thread t1(produkt, a, b, 0, a.size() / 2);
-                std::thread t2(produkt, a, b, a.size() / 2, a.size());
+                std::thread t1(produkt, a2, b2, 0, a2.size() / 2);
+                std::thread t2(produkt, a2, b2, a2.size() / 2, a2.size());
                 t1.join();
                 t2.join();
             }
@@ -221,10 +213,10 @@ int main()
             if (threads == 4)
             {
 
-                std::thread t1(produkt, a, b, 0, n4);
-                std::thread t2(produkt, a, b, n4, n4 + n4);
-                std::thread t3(produkt, a, b, n4 + n4, n4 + n4 + n4);
-                std::thread t4(produkt, a, b, n4 + n4 + n4, a.size());
+                std::thread t1(produkt, a2, b2, 0, n4);
+                std::thread t2(produkt, a2, b2, n4, n4 + n4);
+                std::thread t3(produkt, a2, b2, n4 + n4, n4 + n4 + n4);
+                std::thread t4(produkt, a2, b2, n4 + n4 + n4, a2.size());
                 t1.join();
                 t2.join();
                 t3.join();
@@ -234,14 +226,14 @@ int main()
             if (threads == 8)
             {
 
-                std::thread t1(produkt, a, b, 0, n8);
-                std::thread t2(produkt, a, b, n8, n8 + n8);
-                std::thread t3(produkt, a, b, n8 + n8, n8 + n8 + n8);
-                std::thread t4(produkt, a, b, n8 + n8 + n8, n8 + n8 + n8 + n8);
-                std::thread t5(produkt, a, b, n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8);
-                std::thread t6(produkt, a, b, n8 + n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8 + n8);
-                std::thread t7(produkt, a, b, n8 + n8 + n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8 + n8 + n8);
-                std::thread t8(produkt, a, b, n8 + n8 + n8 + n8 + n8 + n8 + n8, a.size());
+                std::thread t1(produkt, a2, b2, 0, n8);
+                std::thread t2(produkt, a2, b2, n8, n8 + n8);
+                std::thread t3(produkt, a2, b2, n8 + n8, n8 + n8 + n8);
+                std::thread t4(produkt, a2, b2, n8 + n8 + n8, n8 + n8 + n8 + n8);
+                std::thread t5(produkt, a2, b2, n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8);
+                std::thread t6(produkt, a2, b2, n8 + n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8 + n8);
+                std::thread t7(produkt, a2, b2, n8 + n8 + n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8 + n8 + n8);
+                std::thread t8(produkt, a2, b2, n8 + n8 + n8 + n8 + n8 + n8 + n8, a2.size());
                 t1.join();
                 t2.join();
                 t3.join();
@@ -251,6 +243,7 @@ int main()
                 t7.join();
                 t8.join();
             }
+
         }
     }
 }
