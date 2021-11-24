@@ -10,9 +10,9 @@
 #include <functional>
 #include <stdlib.h>
 
-
 using namespace std;
 char hx[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+char bn[] = {'0', '1'};
 int nfes = 0;
 
 string hex_string(int length)
@@ -21,14 +21,26 @@ string hex_string(int length)
 
     for (int i = 0; i < length; i++)
     {
-        srand(seed);
-        int random = rand();
+        srand(time(NULL));
+        int rnd = rand() % 16;
 
-        out = out + hx[rand];
+        out = out + hx[rnd];
     }
     return out;
 }
 
+string binary_string(int lenght)
+{
+    for (int i = 0; i < length; i++)
+    {
+        srand(time(NULL));
+        int rnd = rand() % 1;
+
+        out = out + bn[rand];
+    }
+    return out;
+}
+}
 string hex_to_bin(string in)
 {
     long int i = 0;
@@ -156,10 +168,14 @@ int PSL(string a)
     {
         if (k == a.size() - 2)
         {
-            int val1 = abs(thread t1(Ck, a, k));
-            int val2 = abs(thread t2(Ck, a, k));
+            int val1;
+            std::thread t1([&]{ val1 = Ck(a,k); });
             t1.join();
+
+            int val2;
+            std::thread t1([&]{ val1 = Ck(a,k+1); });
             t2.join();
+            vsota += (val2 * val2);
             if (val1 > max)
             {
                 max = val1;
@@ -171,13 +187,20 @@ int PSL(string a)
         }
         else
         {
-            int val1 = abs(thread t1(Ck, a, k));
-            int val2 = abs(thread t2(Ck, a, k));
-            int val3 = abs(thread t3(Ck, a, k));
-
+            int val1;
+            std::thread t1([&]{ val1 = Ck(a,k); });
             t1.join();
+
+            int val2;
+            std::thread t1([&]{ val1 = Ck(a,k+1); });
             t2.join();
+            vsota += (val2 * val2);
+
+            int val3;
+            std::thread t1([&]{ val1 = Ck(a,k+2); });
             t3.join();
+            vsota += (val3 * val3);
+
 
             if (val1 > max)
             {
@@ -204,24 +227,34 @@ double MF(string a)
     {
         if (k == a.size() - 2)
         {
-            int val1 = thread t1(Ck, a, k);
-            int val2 = thread t2(Ck, a, k + 1);
+            int val1;
+            std::thread t1([&]{ val1 = Ck(a,k); });
             t1.join();
-            t2.join();
             vsota += (val1 * val1);
+
+            int val2;
+            std::thread t1([&]{ val1 = Ck(a,k+1); });
+            t2.join();
             vsota += (val2 * val2);
         }
         else
         {
-            int val1 = thread t1(Ck, a, k);
-            int val2 = thread t2(Ck, a, k + 1);
-            int val3 = thread t3(Ck, a, k + 2);
+
+            int val1;
+            std::thread t1([&]{ val1 = Ck(a,k); });
             t1.join();
-            t2.join();
-            t3.join();
             vsota += (val1 * val1);
+
+            int val2;
+            std::thread t1([&]{ val1 = Ck(a,k+1); });
+            t2.join();
             vsota += (val2 * val2);
+
+            int val3;
+            std::thread t1([&]{ val1 = Ck(a,k+2); });
+            t3.join();
             vsota += (val3 * val3);
+
         }
     }
     vsota = vsota * 2;
@@ -279,7 +312,7 @@ int main()
     cout << "nfes: " << nfes << endl;
     cout << "runtime (sec): " << runtime << endl;
     cout << "speed: " << speed << endl;
-    cout << "sequence: " << strtol(sequence, NULL, 2)<< endl;
+    cout << "sequence: " << strtol(sequence, NULL, 2) << endl;
     cout << "MF: " << mf << endl;
     cout << "PSL: " << psl << endl;
 }
