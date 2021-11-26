@@ -109,19 +109,19 @@ string hex_to_bin(string in)
     }
     return out;
 }
-string bin_to_hex(const string &input)
+string bin_to_hex(string a)
 {
-    size_t len = input.length();
-    if (len % 4 != 0)
+    string input=a;
+    while (input.size() % 4 != 0)
     {
-        return "";
+        input="0"+input;
     }
-    string output = string(len / 4, '0');
-    size_t outputoffset = 0;
-    for (size_t i = 0; i < len; i += 4)
+    string output = string(input.size() / 4, '0');
+    int outputoffset = 0;
+    for (int i = 0; i < input.size(); i += 4)
     {
         int val = 0;
-        for (size_t j = 0; j < 4; j++)
+        for (int j = 0; j < 4; j++)
         {
             if (input[i + j] == '1')
             {
@@ -131,6 +131,18 @@ string bin_to_hex(const string &input)
         output[outputoffset++] = hx[val];
     }
     return output;
+}
+int CharValue(char a)
+{
+    if (a == '0')
+    {
+        return 1;
+    }
+    if (a == '1')
+    {
+        return -1;
+    }
+    return 0;
 }
 
 int Ck(string a, int k)
@@ -274,7 +286,7 @@ double MF(string a)
 {
     double vsota = 0;
 
-    for (int k = 1; k < a.size(); k)
+    for (int k = 1; k < a.size(); k++)
     {
         int val1 = Ck(a, k);
         vsota += (val1 * val1);
@@ -285,28 +297,16 @@ double MF(string a)
     return out;
 }
 
-double sekvenca(string a, string type)
-{
-    if (type == "MF")
-    {
-        return MF(a);
-    }
-    else if (type == "PSL")
-    {
-        return PSL(a);
-    }
-    return
-}
 string find_neighbour(string a, int poz)
 {
     string out = a;
-    if (a[poz] == "0")
+    if (a[poz] == '0')
     {
-        out[poz] = "1";
+        out[poz] = '1';
     }
-    else if (a[poz] == "1")
+    else if (a[poz] == '1')
     {
-        out[poz] = "0";
+        out[poz] = '0';
     }
     return out;
 }
@@ -340,19 +340,19 @@ int main(int argc, char **argv)
         string bin_sosed2 = find_neighbour(bin_pivot,l-2);
         if (type == "MF")
         {
-            int mf1;
-            int mf2;
-            int mf3;
+            double mf1;
+            double mf2;
+            double mf3;
             std::thread t1([&]
-                           { mf1 = sekvenca(bin_pivot); });
+                           { mf1 = MF(bin_pivot); });
             t1.join();
 
-            td::thread t2([&]
-                           { mf2 = sekvenca(bin_sosed1); });
+            std::thread t2([&]
+                           { mf2 = MF(bin_sosed1); });
             t2.join();
 
-            td::thread t3([&]
-                           { mf3 = sekvenca(bin_sosed2); });
+            std::thread t3([&]
+                           { mf3 = MF(bin_sosed2); });
             t3.join();
             if (mf1 > mf)
             {
@@ -374,17 +374,17 @@ int main(int argc, char **argv)
         {
             int psl1;
             std::thread t1([&]
-                           { psl1 = sekvenca(bin_pivot); });
+                           { psl1 = PSL(bin_pivot); });
             t1.join();
 
             int psl2;
             std::thread t2([&]
-                           { psl1 = sekvenca(bin_sosed1); });
+                           { psl2 = PSL(bin_sosed1); });
             t2.join();
 
             int psl3;
             std::thread t3([&]
-                           { psl1 = sekvenca(bin_sosed2); });
+                           { psl3 = PSL(bin_sosed2); });
             t3.join();
 
             if (psl1 < psl)
@@ -410,7 +410,7 @@ int main(int argc, char **argv)
     double speed;
     if (runtime == 0)
     {
-        speed = 0;
+        speed = nfes;
     }
     else
     {
@@ -423,7 +423,7 @@ int main(int argc, char **argv)
     cout << "nfes: " << nfes << endl;
     cout << "runtime (sec): " << runtime << endl;
     cout << "speed: " << speed << endl;
-    cout << "sequence: " << sequence << endl;
+    cout << "sequence: " << bin_to_hex(sequence) << endl;
     if (type == "MF")
     {
         cout << "MF: " << mf << endl;
