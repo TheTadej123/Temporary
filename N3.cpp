@@ -320,8 +320,8 @@ int main(int argc, char **argv)
     int l = atoi(argv[1]);
     int nfesLmt = atoi(argv[4]);
     string sequence;
-    double mf = 100000;
-    int psl = 0;
+    double mf = 0;
+    int psl = 100000000;
     srand(atoi(argv[3]));
     string type = argv[2];
     cout << "start" << endl;
@@ -354,82 +354,41 @@ int main(int argc, char **argv)
             string bin_sosed = find_neighbour(bin_pivot, l - i);
             vrsta.push_back(bin_sosed);
         }
-        std::thread t1;
-        std::thread t2;
-        std::thread t3;
 
         while (vrsta.size() > 0)
         {
+             cout<<"vrsta size "<< vrsta.size()<<endl;
             if (type == "MF")
             {
                 double mf1;
-                double mf2;
-                double mf3;
-                t1([&]
+                std::thread t1([&]
                    { mf1 = MF(vrsta[0]); });
                 t1.join();
 
-                t2([&]
-                   { mf2 = MF(vrsta[1]); });
-                t2.join();
-
-                t3([&]
-                   { mf3 = MF(vrsta[2]); });
-                t3.join();
                 if (mf1 > mf)
                 {
                     mf = mf1;
                     sequence = vrsta[0];
                 }
-                if (mf2 > mf)
-                {
-                    mf = mf2;
-                    sequence = vrsta[1];
-                }
-                if (mf3 > mf)
-                {
-                    mf = mf3;
-                    sequence = vrsta[2];
-                }
+
+                
                 vrsta.erase (vrsta.begin()+0);
-                vrsta.erase (vrsta.begin()+1);
-                vrsta.erase (vrsta.begin()+2);
+
             }
             else if (type == "PSL")
             {
                 int psl1;
-                t1([&]
+                std::thread t1([&]
                    { psl1 = PSL(vrsta[0]); });
                 t1.join();
 
-                int psl2;
-                t2([&]
-                   { psl2 = PSL(vrsta[1]); });
-                t2.join();
-
-                int psl3;
-                t3([&]
-                   { psl3 = PSL(vrsta[2]); });
-                t3.join();
 
                 if (psl1 < psl)
                 {
                     psl = psl1;
                     sequence = vrsta[0];
                 }
-                if (psl2 < psl)
-                {
-                    psl = psl2;
-                    sequence = vrsta[1];
-                }
-                if (psl3 < psl)
-                {
-                    psl = psl3;
-                    sequence = vrsta[2];
-                }
                 vrsta.erase (vrsta.begin()+0);
-                vrsta.erase (vrsta.begin()+1);
-                vrsta.erase (vrsta.begin()+2);
             }
         }
     }
