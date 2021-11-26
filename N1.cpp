@@ -1,435 +1,249 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-#include <sstream>
-#include <bitset>
-#include <string>
 #include <thread>
-#include <random>
-#include <cmath>
-#include <functional>
-#include <stdlib.h>
-
 using namespace std;
-char hx[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-char bn[] = {'0', '1'};
-int nfes = 0;
 
-string hex_string(int lenght)
+vector<double> c;
+vector<vector<double>> c2;
+double vsota = 0;
+
+void sestevanje(vector<double> a, vector<double> b, int begin, int end)
 {
-    string out;
-    for (int i = 0; i < lenght; i++)
+
+    for (int i = begin; i < end; i++)
     {
-
-        int rnd = rand() % 16;
-
-        out = out + hx[rnd];
+        c[i] = a[i] + b[i];
     }
-    return out;
 }
 
-string binary_string(int lenght)
+void skalarniProdukt(vector<double> a, vector<double> b, int begin, int end)
 {
-    string out;
-    for (int i = 0; i < lenght; i++)
+
+    for (int i = begin; i < end; i++)
     {
-
-        int rnd = rand() % 2;
-
-        out = out + bn[rnd];
+        vsota += a[i] + b[i];
     }
-    return out;
 }
-string hex_to_bin(string in)
+
+void produkt(vector<vector<double>> a, vector<vector<double>> b,int begin, int end)
 {
-    long int i = 0;
-    string out = "";
-    while (in[i])
+
+    for (int i = begin; i < end; i++)
     {
-        switch (in[i])
+        for (int j = 0; j < a.size(); j++)
         {
-        case '0':
-            out = out + "0000";
-            break;
-        case '1':
-            out = out + "0001";
-            break;
-        case '2':
-            out = out + "0010";
-            break;
-        case '3':
-            out = out + "0011";
-            break;
-        case '4':
-            out = out + "0100";
-            break;
-        case '5':
-            out = out + "0101";
-            break;
-        case '6':
-            out = out + "0110";
-            break;
-        case '7':
-            out = out + "0111";
-            break;
-        case '8':
-            out = out + "1000";
-            break;
-        case '9':
-            out = out + "1001";
-            break;
-        case 'A':
-        case 'a':
-            out = out + "1010";
-            break;
-        case 'B':
-        case 'b':
-            out = out + "1011";
-            break;
-        case 'C':
-        case 'c':
-            out = out + "1100";
-            break;
-        case 'D':
-        case 'd':
-            out = out + "1101";
-            break;
-        case 'E':
-        case 'e':
-            out = out + "1110";
-            break;
-        case 'F':
-        case 'f':
-            out = out + "1111";
-            break;
-        default:
-            cout << "Nepravilen vnos!" << endl;
-        }
-        i++;
-    }
-    return out;
-}
-string bin_to_hex(string a)
-{
-    string input=a;
-    while (input.size() % 4 != 0)
-    {
-        input="0"+input;
-    }
-    string output = string(input.size() / 4, '0');
-    int outputoffset = 0;
-    for (int i = 0; i < input.size(); i += 4)
-    {
-        int val = 0;
-        for (int j = 0; j < 4; j++)
-        {
-            if (input[i + j] == '1')
+            for (int k = 0; k < a.size(); k++)
             {
-                val += (1 << (3 - j));
-            }
-        }
-        output[outputoffset++] = hx[val];
-    }
-    return output;
-}
-int CharValue(char a)
-{
-    if (a == '0')
-    {
-        return 1;
-    }
-    if (a == '1')
-    {
-        return -1;
-    }
-    return 0;
-}
-
-int Ck(string a, int k)
-{
-    int out = 0;
-    for (int i = 0; i < a.size() - k; i++)
-    {
-
-        int i1 = CharValue(a[i]);
-        int i2 = CharValue(a[i + k]);
-        int val = (i1 * i2);
-        out += val;
-    }
-    nfes++;
-
-    return out;
-}
-int PSL_threaded(string a)
-{
-    int max = 0;
-    for (int k = 1; k <= a.size() - 2; k++)
-    {
-        if (k == a.size() - 2)
-        {
-            int val1;
-            std::thread t1([&]
-                           { val1 = Ck(a, k); });
-            t1.join();
-
-            int val2;
-            std::thread t2([&]
-                           { val2 = Ck(a, k + 1); });
-            t2.join();
-
-            if (val1 > max)
-            {
-                max = val1;
-            }
-            if (val2 > max)
-            {
-                max = val2;
-            }
-        }
-        else
-        {
-            int val1;
-            std::thread t1([&]
-                           { val1 = Ck(a, k); });
-            t1.join();
-
-            int val2;
-            std::thread t2([&]
-                           { val2 = Ck(a, k + 1); });
-            t2.join();
-
-            int val3;
-            std::thread t3([&]
-                           { val3 = Ck(a, k + 2); });
-            t3.join();
-
-            if (val1 > max)
-            {
-                max = val1;
-            }
-            if (val2 > max)
-            {
-                max = val2;
-            }
-            if (val3 > max)
-            {
-                max = val3;
+                c2[i][j] += a[i][k] * b[j][k];
             }
         }
     }
-
-    return max;
 }
-double MF_threaded(string a)
+
+int main()
 {
-    double vsota = 0;
+    int type;
+    cout << "Vnesite tip izracuna " << endl;
+    cin >> type;
+    int threads;
+    cout << "Vnesite stevilo niti " << endl;
+    cin >> threads;
+    cout << "Vnesite velikost matrik" << endl;
+    int size;
+    cin >> size;
+    vector<double> a;
+    vector<double> b;
 
-    for (int k = 1; k <= a.size() - 2; k + 3)
+    vector<vector<double>> a2;
+    vector<vector<double>> b2;
+    if (type == 1|| type==2)
     {
-        if (k == a.size() - 2)
+        for (int i = 0; i < size; i++)
         {
-            int val1;
-            std::thread t1([&]
-                           { val1 = Ck(a, k); });
-            t1.join();
-            vsota += (val1 * val1);
-
-            int val2;
-            std::thread t2([&]
-                           { val2 = Ck(a, k + 1); });
-            t2.join();
-            vsota += (val2 * val2);
+            a.push_back(rand() % 100);
+            b.push_back(rand() % 100);
         }
-        else
+        c.resize(size);
+    }
+    if (type == 3)
+    {
+
+        for (int i = 0; i < size; i++)
         {
+            vector<double> c1;
+            for (int i = 0; i < size; i++)
+            {
 
-            int val1;
-            std::thread t1([&]
-                           { val1 = Ck(a, k); });
-            t1.join();
-            vsota += (val1 * val1);
-
-            int val2;
-            std::thread t2([&]
-                           { val2 = Ck(a, k + 1); });
-            t2.join();
-            vsota += (val2 * val2);
-
-            int val3;
-            std::thread t3([&]
-                           { val3 = Ck(a, k + 2); });
-            t3.join();
-            vsota += (val3 * val3);
+                c1.push_back(rand() % 100);
+                c1.push_back(rand() % 100);
+            }
+            a2.push_back(c1);
+            b2.push_back(c1);
         }
+        c2.resize(size,vector<double> (size,0));
     }
-    vsota = vsota * 2;
 
-    double out = (a.size() * a.size()) / (vsota);
-    return out;
-}
 
-int PSL(string a)
-{
-    int max = 0;
-    for (int k = 1; k < a.size(); k++)
+    int n4 = size / 4;
+    int n8 = size / 8;
+    if (type == 1)
     {
-        int val1 = Ck(a, k);
-        if (val1 > max)
+        for (int i = 0; i < 100000; i++)
         {
-            max = val1;
-        }
-    }
-
-    return max;
-}
-double MF(string a)
-{
-    double vsota = 0;
-
-    for (int k = 1; k < a.size(); k++)
-    {
-        int val1 = Ck(a, k);
-        vsota += (val1 * val1);
-    }
-    vsota = vsota * 2;
-
-    double out = (a.size() * a.size()) / (vsota);
-    return out;
-}
-
-string find_neighbour(string a, int poz)
-{
-    string out = a;
-    if (a[poz] == '0')
-    {
-        out[poz] = '1';
-    }
-    else if (a[poz] == '1')
-    {
-        out[poz] = '0';
-    }
-    return out;
-}
-
-int main(int argc, char **argv)
-{
-    int l = atoi(argv[1]);
-    int nfesLmt = atoi(argv[4]);
-    string sequence;
-    double mf = 0;
-    int psl = 0;
-    srand(atoi(argv[3]));
-    string type = argv[2];
-    cout << "start" << endl;
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    string bin = binary_string(l);
-    if (type == "MF")
-    {
-        mf = MF(bin);
-    }
-    else if (type == "PSL")
-    {
-        psl = PSL(bin);
-    }
-    sequence = bin;
-
-    while (nfes < nfesLmt)
-    {
-        string bin_pivot = binary_string(l);
-        string bin_sosed1 = find_neighbour(bin_pivot,l-1);
-        string bin_sosed2 = find_neighbour(bin_pivot,l-2);
-        if (type == "MF")
-        {
-            double mf1;
-            double mf2;
-            double mf3;
-            std::thread t1([&]
-                           { mf1 = MF(bin_pivot); });
-            t1.join();
-
-            std::thread t2([&]
-                           { mf2 = MF(bin_sosed1); });
-            t2.join();
-
-            std::thread t3([&]
-                           { mf3 = MF(bin_sosed2); });
-            t3.join();
-            if (mf1 > mf)
+            if (threads == 1)
             {
-                mf = mf1;
-                sequence = bin;
+                std::thread t1(sestevanje, a, b, 0, a.size());
+                t1.join();
             }
-            if (mf2 > mf)
-            {
-                mf = mf2;
-                sequence = bin_sosed1;
-            }
-            if (mf3 > mf)
-            {
-                mf = mf3;
-                sequence = bin_sosed2;
-            }
-        }
-        else if (type == "PSL")
-        {
-            int psl1;
-            std::thread t1([&]
-                           { psl1 = PSL(bin_pivot); });
-            t1.join();
 
-            int psl2;
-            std::thread t2([&]
-                           { psl2 = PSL(bin_sosed1); });
-            t2.join();
-
-            int psl3;
-            std::thread t3([&]
-                           { psl3 = PSL(bin_sosed2); });
-            t3.join();
-
-            if (psl1 < psl)
+            if (threads == 2)
             {
-                psl = psl1;
-                sequence = bin_pivot;
+                std::thread t1(sestevanje, a, b, 0, a.size() / 2);
+                std::thread t2(sestevanje, a, b, a.size() / 2, a.size());
+                t1.join();
+                t2.join();
             }
-            if (psl2 < psl)
+
+            if (threads == 4)
             {
-                psl = psl2;
-                sequence = bin_sosed1;
+
+                std::thread t1(sestevanje, a, b, 0, n4);
+                std::thread t2(sestevanje, a, b, n4, n4 + n4);
+                std::thread t3(sestevanje, a, b, n4 + n4, n4 + n4 + n4);
+                std::thread t4(sestevanje, a, b, n4 + n4 + n4, a.size());
+                t1.join();
+                t2.join();
+                t3.join();
+                t4.join();
             }
-            if (psl3 < psl)
+
+            if (threads == 8)
             {
-                psl = psl3;
-                sequence = bin_sosed2;
+
+                std::thread t1(sestevanje, a, b, 0, n8);
+                std::thread t2(sestevanje, a, b, n8, n8 + n8);
+                std::thread t3(sestevanje, a, b, n8 + n8, n8 + n8 + n8);
+                std::thread t4(sestevanje, a, b, n8 + n8 + n8, n8 + n8 + n8 + n8);
+                std::thread t5(sestevanje, a, b, n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8);
+                std::thread t6(sestevanje, a, b, n8 + n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8 + n8);
+                std::thread t7(sestevanje, a, b, n8 + n8 + n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8 + n8 + n8);
+                std::thread t8(sestevanje, a, b, n8 + n8 + n8 + n8 + n8 + n8 + n8, a.size());
+                t1.join();
+                t2.join();
+                t3.join();
+                t4.join();
+                t5.join();
+                t6.join();
+                t7.join();
+                t8.join();
             }
         }
     }
+    if (type == 2)
+    {
+        for (int i = 0; i < 100000; i++)
+        {
+            if (threads == 1)
+            {
+                std::thread t1(skalarniProdukt, a, b, 0, a.size());
+                t1.join();
+            }
 
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    int runtime = (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) / 1000000.0;
-    double speed;
-    if (runtime == 0)
-    {
-        speed = nfes;
-    }
-    else
-    {
-        speed = nfes / runtime;
-    }
+            if (threads == 2)
+            {
+                std::thread t1(skalarniProdukt, a, b, 0, a.size() / 2);
+                std::thread t2(skalarniProdukt, a, b, a.size() / 2, a.size());
+                t1.join();
+                t2.join();
+            }
 
-    cout << "L: " << l << endl;
-    cout << "nfesLmt: " << nfesLmt << endl;
-    cout << "seed: " << l << endl;
-    cout << "nfes: " << nfes << endl;
-    cout << "runtime (sec): " << runtime << endl;
-    cout << "speed: " << speed << endl;
-    cout << "sequence: " << bin_to_hex(sequence) << endl;
-    if (type == "MF")
-    {
-        cout << "MF: " << mf << endl;
+            if (threads == 4)
+            {
+
+                std::thread t1(skalarniProdukt, a, b, 0, n4);
+                std::thread t2(skalarniProdukt, a, b, n4, n4 + n4);
+                std::thread t3(skalarniProdukt, a, b, n4 + n4, n4 + n4 + n4);
+                std::thread t4(skalarniProdukt, a, b, n4 + n4 + n4, a.size());
+                t1.join();
+                t2.join();
+                t3.join();
+                t4.join();
+            }
+
+            if (threads == 8)
+            {
+
+                std::thread t1(skalarniProdukt, a, b, 0, n8);
+                std::thread t2(skalarniProdukt, a, b, n8, n8 + n8);
+                std::thread t3(skalarniProdukt, a, b, n8 + n8, n8 + n8 + n8);
+                std::thread t4(skalarniProdukt, a, b, n8 + n8 + n8, n8 + n8 + n8 + n8);
+                std::thread t5(skalarniProdukt, a, b, n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8);
+                std::thread t6(skalarniProdukt, a, b, n8 + n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8 + n8);
+                std::thread t7(skalarniProdukt, a, b, n8 + n8 + n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8 + n8 + n8);
+                std::thread t8(skalarniProdukt, a, b, n8 + n8 + n8 + n8 + n8 + n8 + n8, a.size());
+                t1.join();
+                t2.join();
+                t3.join();
+                t4.join();
+                t5.join();
+                t6.join();
+                t7.join();
+                t8.join();
+            }
+        }
     }
-    else if (type == "PSL")
+    if (type = 3)
     {
-        cout << "PSL: " << psl << endl;
+        for (int i = 0; i < 100000; i++)
+        {
+            if (threads == 1)
+            {
+                std::thread t1(produkt, a2, b2,0, a2.size());
+                t1.join();
+            }
+            if (threads == 2)
+            {
+                std::thread t1(produkt, a2, b2, 0, a2.size() / 2);
+                std::thread t2(produkt, a2, b2, a2.size() / 2, a2.size());
+                t1.join();
+                t2.join();
+            }
+
+            if (threads == 4)
+            {
+
+                std::thread t1(produkt, a2, b2, 0, n4);
+                std::thread t2(produkt, a2, b2, n4, n4 + n4);
+                std::thread t3(produkt, a2, b2, n4 + n4, n4 + n4 + n4);
+                std::thread t4(produkt, a2, b2, n4 + n4 + n4, a2.size());
+                t1.join();
+                t2.join();
+                t3.join();
+                t4.join();
+            }
+
+            if (threads == 8)
+            {
+
+                std::thread t1(produkt, a2, b2, 0, n8);
+                std::thread t2(produkt, a2, b2, n8, n8 + n8);
+                std::thread t3(produkt, a2, b2, n8 + n8, n8 + n8 + n8);
+                std::thread t4(produkt, a2, b2, n8 + n8 + n8, n8 + n8 + n8 + n8);
+                std::thread t5(produkt, a2, b2, n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8);
+                std::thread t6(produkt, a2, b2, n8 + n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8 + n8);
+                std::thread t7(produkt, a2, b2, n8 + n8 + n8 + n8 + n8 + n8, n8 + n8 + n8 + n8 + n8 + n8 + n8);
+                std::thread t8(produkt, a2, b2, n8 + n8 + n8 + n8 + n8 + n8 + n8, a2.size());
+                t1.join();
+                t2.join();
+                t3.join();
+                t4.join();
+                t5.join();
+                t6.join();
+                t7.join();
+                t8.join();
+            }
+
+        }
     }
 }
