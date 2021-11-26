@@ -1,13 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-#include <sstream>
-#include <bitset>
 #include <string>
 #include <thread>
 #include <random>
 #include <cmath>
-#include <functional>
+#include <mutex>
 #include <stdlib.h>
 
 using namespace std;
@@ -17,6 +15,12 @@ int nfes = 0;
 vector<string> vrsta;
 double mf = 0;
 int psl = 100000000;
+int l=0;
+string type="";
+int vrsta_size;
+
+std::mutex mtx; 
+
 string sequence;
 string hex_string(int lenght)
 {
@@ -314,28 +318,32 @@ string find_neighbour(string a, int poz)
     return out;
 }
 
-void racunanje(string pivot)
+void racunanje(string pivot, string type)
 {
     if (type == "MF")
     {
         double mf1 = MF(bin_pivot);
+        mtx.lock();
         if (mf1 > mf)
         {
             mf = mf1;
             sequence = bin_pivot;
         }
+        mtx.unlock();
     }
     else if (type == "PSL")
     {
         int psl1 = PSL(bin_pivot);
+        mtx.lock();
         if (psl1 < psl)
         {
             psl = psl1;
             sequence = bin_pivot;
         }
+        mtx.unlock();
     }
 
-    for (int i = 1; i < atoi(argv[5]) + 1; i++)
+    for (int i = 1; i < vrsta_size + 1; i++)
     {
         string bin_sosed = find_neighbour(bin_pivot, l - i);
         vrsta.push_back(bin_sosed);
@@ -355,7 +363,7 @@ void racunanje(string pivot)
                 std::thread t2([&]
                                { mf2 = MF(vrsta[1]); });
                 t2.join();
-
+                mtx.lock();
                 if (mf1 > mf)
                 {
                     mf = mf1;
@@ -366,6 +374,7 @@ void racunanje(string pivot)
                     mf = mf2;
                     sequence = vrsta[1];
                 }
+                mtx.unlock();
 
                 vrsta.erase(vrsta.begin() + 0);
                 vrsta.erase(vrsta.begin() + 1);
@@ -380,7 +389,7 @@ void racunanje(string pivot)
                 std::thread t2([&]
                                { psl2 = PSL(vrsta[1]); });
                 t2.join();
-
+                mtx.lock();
                 if (psl1 < psl)
                 {
                     psl = psl1;
@@ -391,6 +400,7 @@ void racunanje(string pivot)
                     psl = psl2;
                     sequence = vrsta[1];
                 }
+                mtx.unlock();
                 vrsta.erase(vrsta.begin() + 0);
                 vrsta.erase(vrsta.begin() + 1);
             }
@@ -403,12 +413,13 @@ void racunanje(string pivot)
                 std::thread t1([&]
                                { mf1 = MF(vrsta[0]); });
                 t1.join();
-
+                mtx.lock();
                 if (mf1 > mf)
                 {
                     mf = mf1;
                     sequence = vrsta[0];
                 }
+                mtx.unlock();
 
                 vrsta.erase(vrsta.begin() + 0);
             }
@@ -418,12 +429,13 @@ void racunanje(string pivot)
                 std::thread t1([&]
                                { psl1 = PSL(vrsta[0]); });
                 t1.join();
-
+                mtx.lock();
                 if (psl1 < psl)
                 {
                     psl = psl1;
                     sequence = vrsta[0];
                 }
+                mtx.unlock();
                 vrsta.erase(vrsta.begin() + 0);
             }
         }
@@ -432,16 +444,20 @@ void racunanje(string pivot)
 
 int main(int argc, char **argv)
 {
-    int l = atoi(argv[1]);
-    int nfesLmt = atoi(argv[4]);
-    srand(atoi(argv[3]));
+    l = atoi(argv[1]);
     string type = argv[2];
+    srand(atoi(argv[3]));
+    int nfesLmt = atoi(argv[4]);
+    vrsta_size=atoi(argv[5]);
+    
+
     cout << "start" << endl;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     while (nfes < nfesLmt)
     {
         string bin_pivot = binary_string(l);
         std::thread t0(racunanje, bin_pivot);
+        t0.join();
     }
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     int runtime = (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) / 1000000.0;
