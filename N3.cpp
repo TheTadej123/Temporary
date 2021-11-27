@@ -12,7 +12,7 @@ using namespace std;
 char hx[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 char bn[] = {'0', '1'};
 int nfes = 0;
-vector<string> vrsta;
+SinhroniziranaVrsta<int> vrsta;
 double mf = 0;
 int psl = 100000000;
 int l = 0;
@@ -322,7 +322,7 @@ void racunanje()
 {
     while (vrsta.size() > 0)
     {
-        string seq = vrsta.pop_back();
+        string seq = vrsta.beri();
         if (type == "MF")
         {
 
@@ -345,6 +345,39 @@ void racunanje()
     }
 }
 
+template <typename T>
+class SinhroniziranaVrsta
+{
+public:
+    SinhroniziranaVrsta() {}
+    void vstavi(const T &podatki);
+    T beri();
+
+private:
+    SinhroniziranaVrsta(const SinhroniziranaVrsta &);
+    SinhroniziranaVrsta &operator=(const SinhroniziranaVrsta &);
+    std ::list<T> vrsta;
+    std ::mutex mojMutex;
+    std ::conditionVariable mojCv;
+
+    void SinhroniziranaVrsta<T>::vstavi(const T &podatki)
+    {
+        std ::unique_lock<std ::mutex> lck(mojMutex);
+        vrsta.push_back(podatki);
+        mojCv.notify_one();
+    }
+    template <typename T>
+    T SinhroniziranaVrsta<T>::beri()
+    {
+        std ::unique_lock<std ::mutex> lck(mojMutex);
+        while (vrsta.empty())
+            mojCv.wait(lck);
+        T result = vrsta.front();
+        vrsta.pop_front();
+        return result;
+    }
+};
+
 int main(int argc, char **argv)
 {
     l = atoi(argv[1]);
@@ -357,19 +390,19 @@ int main(int argc, char **argv)
     array<thread, threads_num> threads;
     for (auto &t : threads)
     {
-        t = thread(racunanje)
-                t.join();
+        t = thread(racunanje);
+        t.join();
     }
 
     while (nfes < nfesLmt)
     {
         string bin_pivot = binary_string(l);
-        vrsta.push_back(bin_pivot);
+        vrsta.vstavi(bin_pivot);
 
         for (int i = 1; i < threads_num; i++)
         {
             string bin_sosed = find_neighbour(bin_pivot, l - i);
-            vrsta.push_back(bin_sosed);
+            vrsta.vstavi(bin_sosed);
         }
     }
 
