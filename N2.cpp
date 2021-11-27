@@ -330,56 +330,43 @@ int main(int argc, char **argv)
 
     while (nfes < nfesLmt)
     {
+        vector<string> vrsta;
         string bin_pivot = binary_string(l);
-        if (type == "MF")
-        {
-            double mf1;
-            t = thread([&]
-                       { mf1 = MF(bin_pivot); });
-            t.join();
-            if (mf1 > mf)
-            {
-                mf = mf1;
-                sequence = bin;
-            }
-        }
+        vrsta.push_back(bin_pivot);
 
-        else if (type == "PSL")
-        {
-            int psl1;
-            t = thread([&]
-                       { psl1 = PSL(bin_pivot); });
-            t.join();
-            if (psl1 < psl)
-            {
-                psl = psl1;
-                sequence = bin_pivot;
-            }
-            i++;
-        }
-
-        for (int i = 1; i < threads_num; i++)
+        for (int i = 1; i < threads_num ; i++)
         {
             string bin_sosed = find_neighbour(bin_pivot, l - i);
-            if (type == "MF")
+            vrsta.push_back(bin_sosed);
+        }
+
+        if (type == "MF")
+        {
+            array<thread, 2> threads;
+            int i = 0;
+            for (auto &t : threads)
             {
                 double mf1;
                 t = thread([&]
-                           { mf1 = MF(bin_sosed); });
+                           { mf1 = MF(vrsta[i]); });
                 t.join();
                 if (mf1 > mf)
                 {
                     mf = mf1;
                     sequence = bin;
                 }
+                i++;
             }
-
-            else if (type == "PSL")
+        }
+        else if (type == "PSL")
+        {
+            array<thread, 4> threads;
+            int i=0;
+            for (auto &t : threads)
             {
-
                 int psl1;
                 t = thread([&]
-                           { psl1 = PSL(bin_sosed); });
+                           { psl1 = PSL(vrsta[i]); });
                 t.join();
                 if (psl1 < psl)
                 {
