@@ -318,30 +318,22 @@ int main(int argc, char **argv)
 {
     int l = atoi(argv[1]);
     int nfesLmt = atoi(argv[4]);
-    int threads_num = atoi(argv[5]);
+    const int threads_num = atoi(argv[5]);
     string sequence;
     double mf = 0;
-    int psl = 0;
+    int psl = 1000000000;
     srand(atoi(argv[3]));
     string type = argv[2];
     cout << "start" << endl;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     string bin = binary_string(l);
-    if (type == "MF")
-    {
-        mf = MF(bin);
-    }
-    else if (type == "PSL")
-    {
-        psl = PSL(bin);
-    }
-    sequence = bin;
 
     while (nfes < nfesLmt)
     {
         vector<string> vrsta;
         string bin_pivot = binary_string(l);
         vrsta.push_back(bin_pivot);
+
         for (int i = 1; i < threads_num ; i++)
         {
             string bin_sosed = find_neighbour(bin_pivot, l - i);
@@ -350,7 +342,7 @@ int main(int argc, char **argv)
 
         if (type == "MF")
         {
-            array<thread, threads_num> threads;
+            array<thread, 2> threads;
             int i = 0;
             for (auto &t : threads)
             {
@@ -368,7 +360,7 @@ int main(int argc, char **argv)
         }
         else if (type == "PSL")
         {
-            array<thread, threads_num> threads;
+            array<thread, 4> threads;
             int i=0;
             for (auto &t : threads)
             {
@@ -400,7 +392,7 @@ int main(int argc, char **argv)
 
     cout << "L: " << l << endl;
     cout << "nfesLmt: " << nfesLmt << endl;
-    cout << "seed: " << l << endl;
+    cout << "seed: " << atoi(argv[3]) << endl;
     cout << "nfes: " << nfes << endl;
     cout << "runtime (sec): " << runtime << endl;
     cout << "speed: " << speed << endl;
