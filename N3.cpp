@@ -15,11 +15,11 @@ int nfes = 0;
 vector<string> vrsta;
 double mf = 0;
 int psl = 100000000;
-int l=0;
+int l = 0;
 string type;
-int vrsta_size;
+const int threads_num;
 
-std::mutex mtx; 
+std::mutex mtx;
 
 string sequence;
 string hex_string(int lenght)
@@ -318,141 +318,28 @@ string find_neighbour(string a, int poz)
     return out;
 }
 
-void racunanje(string bin_pivot)
+void racunanje()
 {
-    if (type == "MF")
-    {
-        double mf1;
-        std::thread tp([&]
-                      { mf1 = MF(bin_pivot); });
-        tp.join();
-        mtx.lock();
-        if (mf1 > mf)
-        {
-            mf = mf1;
-            sequence = bin_pivot;
-        }
-mtx.unlock();
-        
-    }
-    else if (type == "PSL")
-    {
-        int psl1;
-       std::thread tp([&]
-                      { psl1 = PSL(bin_pivot); });
-        tp.join();
-       mtx.lock();
-        if (psl1 < psl)
-        {
-            psl = psl1;
-            sequence = bin_pivot;
-        }
-mtx.unlock();
-       
-    }
-
-    for (int i = 1; i < vrsta_size + 1; i++)
-    {
-        string bin_sosed = find_neighbour(bin_pivot, l - i);
-
-        vrsta.push_back(bin_sosed);
-    }
-
-
     while (vrsta.size() > 0)
     {
-
-        if (false)
+        string seq = vrsta.pop_back();
+        if (type == "MF")
         {
-            if (type == "MF")
-            {
 
-                double mf1;
-                double mf2;
-                std::thread t1([&]
-                               { mf1 = MF(vrsta[0]); });
-                
-                std::thread t2([&]
-                               { mf2 = MF(vrsta[1]); });
-                t1.join();
-                t2.join();
-                mtx.lock();
-                if (mf1 > mf)
-                {
-                    mf = mf1;
-                    sequence = vrsta[0];
-                }
-                if (mf2 > mf)
-                {
-                    mf = mf2;
-                    sequence = vrsta[1];
-                }
-mtx.unlock();
-
-                vrsta.erase(vrsta.begin() + 0);
-                vrsta.erase(vrsta.begin() + 1);
-            }
-            else if (type == "PSL")
+            double mf1 = MF(seq);
+            if (mf1 > mf)
             {
-                int psl1;
-                int psl2;
-                std::thread t1([&]
-                               { psl1 = PSL(vrsta[0]); });
-                
-                std::thread t2([&]
-                               { psl2 = PSL(vrsta[1]); });
-                t1.join();
-                t2.join();
-                mtx.lock();
-                if (psl1 < psl)
-                {
-                    psl = psl1;
-                    sequence = vrsta[0];
-                }
-                if (psl2 < psl)
-                {
-                    psl = psl2;
-                    sequence = vrsta[1];
-                }
-                mtx.unlock();
-             
-                vrsta.erase(vrsta.begin() + 0);
-                vrsta.erase(vrsta.begin() + 1);
+                mf = mf1;
+                sequence = seq;
             }
         }
-        else
+        else if (type == "PSL")
         {
-            if (type == "MF")
+            double psl1 = PSL(seq);
+            if (psl1 < psl)
             {
-                double mf1;
-
-                std::thread t1([&]
-                               { mf1 = MF(vrsta[0]); });
-                t1.join();
-                mtx.lock();
-                if (mf1 > mf)
-                {
-                    mf = mf1;
-                    sequence = vrsta[0];
-                }
-                mtx.unlock();
-
-                vrsta.erase(vrsta.begin() + 0);
-            }
-            else if (type == "PSL")
-            {
-                int psl1;
-                std::thread t1([&]
-                               { psl1 = PSL(vrsta[0]); });
-                t1.join();
-                mtx.lock();
-                if (psl1 < psl)
-                {
-                    psl = psl1;
-                    sequence = vrsta[0];
-                }
-                mtx.unlock();
-                vrsta.erase(vrsta.begin() + 0);
+                psl = psl1;
+                sequence = seq;
             }
         }
     }
@@ -464,17 +351,28 @@ int main(int argc, char **argv)
     type = argv[2];
     srand(atoi(argv[3]));
     int nfesLmt = atoi(argv[4]);
-    vrsta_size=atoi(argv[5]);
-    
-
+    threads_num = atoi(argv[5]);
     cout << "start" << endl;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    array<thread, threads_num> threads;
+    for (auto &t : threads)
+    {
+        t = thread(racunanje)
+                t.join();
+    }
+
     while (nfes < nfesLmt)
     {
         string bin_pivot = binary_string(l);
-        std::thread t0(racunanje, bin_pivot);
-        t0.join();
+        vrsta.push_back(bin_pivot);
+
+        for (int i = 1; i < threads_num; i++)
+        {
+            string bin_sosed = find_neighbour(bin_pivot, l - i);
+            vrsta.push_back(bin_sosed);
+        }
     }
+
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     int runtime = (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) / 1000000.0;
     double speed;
