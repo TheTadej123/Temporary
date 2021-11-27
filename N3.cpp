@@ -16,7 +16,7 @@ vector<string> vrsta;
 double mf = 0;
 int psl = 100000000;
 int l=0;
-string type="";
+string type;
 int vrsta_size;
 
 std::mutex mtx; 
@@ -318,50 +318,63 @@ string find_neighbour(string a, int poz)
     return out;
 }
 
-void racunanje(string pivot, string type)
+void racunanje(string bin_pivot)
 {
     if (type == "MF")
     {
-        double mf1 = MF(bin_pivot);
+        double mf1;
+        std::thread tp([&]
+                      { mf1 = MF(bin_pivot); });
+        tp.join();
         mtx.lock();
         if (mf1 > mf)
         {
             mf = mf1;
             sequence = bin_pivot;
         }
-        mtx.unlock();
+mtx.unlock();
+        
     }
     else if (type == "PSL")
     {
-        int psl1 = PSL(bin_pivot);
-        mtx.lock();
+        int psl1;
+       std::thread tp([&]
+                      { psl1 = PSL(bin_pivot); });
+        tp.join();
+       mtx.lock();
         if (psl1 < psl)
         {
             psl = psl1;
             sequence = bin_pivot;
         }
-        mtx.unlock();
+mtx.unlock();
+       
     }
 
     for (int i = 1; i < vrsta_size + 1; i++)
     {
         string bin_sosed = find_neighbour(bin_pivot, l - i);
+
         vrsta.push_back(bin_sosed);
     }
 
+
     while (vrsta.size() > 0)
     {
-        if (vrsta.size() % 2 = 0)
+
+        if (false)
         {
             if (type == "MF")
             {
+
                 double mf1;
                 double mf2;
                 std::thread t1([&]
                                { mf1 = MF(vrsta[0]); });
-                t1.join();
+                
                 std::thread t2([&]
                                { mf2 = MF(vrsta[1]); });
+                t1.join();
                 t2.join();
                 mtx.lock();
                 if (mf1 > mf)
@@ -374,7 +387,7 @@ void racunanje(string pivot, string type)
                     mf = mf2;
                     sequence = vrsta[1];
                 }
-                mtx.unlock();
+mtx.unlock();
 
                 vrsta.erase(vrsta.begin() + 0);
                 vrsta.erase(vrsta.begin() + 1);
@@ -385,9 +398,10 @@ void racunanje(string pivot, string type)
                 int psl2;
                 std::thread t1([&]
                                { psl1 = PSL(vrsta[0]); });
-                t1.join();
+                
                 std::thread t2([&]
                                { psl2 = PSL(vrsta[1]); });
+                t1.join();
                 t2.join();
                 mtx.lock();
                 if (psl1 < psl)
@@ -401,6 +415,7 @@ void racunanje(string pivot, string type)
                     sequence = vrsta[1];
                 }
                 mtx.unlock();
+             
                 vrsta.erase(vrsta.begin() + 0);
                 vrsta.erase(vrsta.begin() + 1);
             }
@@ -410,6 +425,7 @@ void racunanje(string pivot, string type)
             if (type == "MF")
             {
                 double mf1;
+
                 std::thread t1([&]
                                { mf1 = MF(vrsta[0]); });
                 t1.join();
@@ -445,7 +461,7 @@ void racunanje(string pivot, string type)
 int main(int argc, char **argv)
 {
     l = atoi(argv[1]);
-    string type = argv[2];
+    type = argv[2];
     srand(atoi(argv[3]));
     int nfesLmt = atoi(argv[4]);
     vrsta_size=atoi(argv[5]);
