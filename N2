@@ -170,11 +170,12 @@ int PSL_threaded(string a)
             int val1;
             std::thread t1([&]
                            { val1 = Ck(a, k); });
-            t1.join();
+            
 
             int val2;
             std::thread t2([&]
                            { val2 = Ck(a, k + 1); });
+            t1.join();
             t2.join();
 
             if (val1 > max)
@@ -191,16 +192,18 @@ int PSL_threaded(string a)
             int val1;
             std::thread t1([&]
                            { val1 = Ck(a, k); });
-            t1.join();
+            
 
             int val2;
             std::thread t2([&]
                            { val2 = Ck(a, k + 1); });
-            t2.join();
+            
 
             int val3;
             std::thread t3([&]
                            { val3 = Ck(a, k + 2); });
+            t1.join();
+            t2.join();
             t3.join();
 
             if (val1 > max)
@@ -231,12 +234,13 @@ double MF_threaded(string a)
             int val1;
             std::thread t1([&]
                            { val1 = Ck(a, k); });
-            t1.join();
+            
             vsota += (val1 * val1);
 
             int val2;
             std::thread t2([&]
                            { val2 = Ck(a, k + 1); });
+            t1.join();
             t2.join();
             vsota += (val2 * val2);
         }
@@ -246,18 +250,20 @@ double MF_threaded(string a)
             int val1;
             std::thread t1([&]
                            { val1 = Ck(a, k); });
-            t1.join();
+            
             vsota += (val1 * val1);
 
             int val2;
             std::thread t2([&]
                            { val2 = Ck(a, k + 1); });
-            t2.join();
+            
             vsota += (val2 * val2);
 
             int val3;
             std::thread t3([&]
                            { val3 = Ck(a, k + 2); });
+            t1.join();
+            t2.join();
             t3.join();
             vsota += (val3 * val3);
         }
@@ -345,14 +351,16 @@ int main(int argc, char **argv)
             double mf3;
             std::thread t1([&]
                            { mf1 = MF(bin_pivot); });
-            t1.join();
+            
 
             std::thread t2([&]
                            { mf2 = MF(bin_sosed1); });
-            t2.join();
+           
 
             std::thread t3([&]
                            { mf3 = MF(bin_sosed2); });
+            t1.join();
+            t2.join();
             t3.join();
             if (mf1 > mf)
             {
@@ -375,16 +383,18 @@ int main(int argc, char **argv)
             int psl1;
             std::thread t1([&]
                            { psl1 = PSL(bin_pivot); });
-            t1.join();
+           
 
             int psl2;
             std::thread t2([&]
                            { psl2 = PSL(bin_sosed1); });
-            t2.join();
+            
 
             int psl3;
             std::thread t3([&]
                            { psl3 = PSL(bin_sosed2); });
+            t1.join();
+            t2.join();
             t3.join();
 
             if (psl1 < psl)
