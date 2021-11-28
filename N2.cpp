@@ -326,69 +326,59 @@ int main(int argc, char **argv)
     string type = argv[2];
     cout << "start" << endl;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    string bin = binary_string(l);
-
     while (nfes < nfesLmt)
     {
+        vector<string> opravila;
         string bin_pivot = binary_string(l);
-        if (type == "MF")
-        {
-            double mf1;
-            t = thread([&]
-                       { mf1 = MF(bin_pivot); });
-            t.join();
-            if (mf1 > mf)
-            {
-                mf = mf1;
-                sequence = bin_pivot;
-            }
-        }
-
-        else if (type == "PSL")
-        {
-
-            int psl1;
-            t = thread([&]
-                       { psl1 = PSL(bin_pivot); });
-            t.join();
-            if (psl1 < psl)
-            {
-                psl = psl1;
-                sequence = bin_pivot;
-            }
-            i++;
-        }
-
+        opravila.push_back(bin_pivot);
         for (int i = 1; i < threads_num; i++)
         {
             string bin_sosed = find_neighbour(bin_pivot, l - i);
-            if (type == "MF")
+            opravila.push_back(bin_sosed);
+            
+        }
+        array<thread, 8> threads;
+        int i=0;
+        if (type == "MF")
+            {
+            for (auto &t : threads)
             {
                 double mf1;
                 t = thread([&]
-                           { mf1 = MF(bin_sosed); });
-                t.join();
-                if (mf1 > mf)
+                           { mf1 = MF(opravila[i]);
+                             if (mf1 > mf)
                 {
                     mf = mf1;
-                    sequence = bin_sosed;
-                }
+                    sequence = opravila[i];
+                } });
+                i++;
+            }
+
             }
 
             else if (type == "PSL")
             {
 
+                for (auto &t : threads)
+            {
                 int psl1;
                 t = thread([&]
-                           { psl1 = PSL(bin_sosed); });
-                t.join();
-                if (psl1 < psl)
+                           { psl1 = PSL(opravila[i]);
+                             if (psl1 < psl)
                 {
                     psl = psl1;
-                    sequence = bin_sosed;
-                }
+                    sequence = opravila[i];
+                } });
+                i++;
             }
-        }
+            }
+            for (auto &t : threads)
+            {
+               t.join();
+
+            }
+
+        
     }
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
@@ -417,5 +407,5 @@ int main(int argc, char **argv)
     else if (type == "PSL")
     {
         cout << "PSL: " << psl << endl;
-    }ffff
+    }
 }
