@@ -6,18 +6,60 @@
 #include <random>
 #include <cmath>
 #include <mutex>
+#include <list>
+#include <condition_variable>
 #include <stdlib.h>
 
 using namespace std;
+
+template <typename T>
+class SinhroniziranaVrsta
+{
+public:
+    SinhroniziranaVrsta() {}
+    void vstavi(const T &podatki);
+    T beri();
+
+private:
+    SinhroniziranaVrsta(const SinhroniziranaVrsta &);
+    SinhroniziranaVrsta &operator=(const SinhroniziranaVrsta &);
+    list<T> vrsta;
+    mutex mojMutex;
+    condition_variable mojCv;
+
+    
+};
+    template <typename T>
+    void SinhroniziranaVrsta<T>::vstavi(const T &podatki)
+    {
+        std ::unique_lock<std ::mutex> lck(mojMutex);
+        vrsta.push_back(podatki);
+        mojCv.notify_one();
+    }
+    template <typename T>
+    T SinhroniziranaVrsta<T>::beri()
+    {
+        std ::unique_lock<std ::mutex> lck(mojMutex);
+        while (vrsta.empty())
+            mojCv.wait(lck);
+        T result = vrsta.front();
+        vrsta.pop_front();
+        return result;
+    }
+
+
+
+
+
 char hx[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 char bn[] = {'0', '1'};
 int nfes = 0;
-SinhroniziranaVrsta<int> vrsta;
+SinhroniziranaVrsta<string> vrsta;
 double mf = 0;
 int psl = 100000000;
 int l = 0;
 string type;
-const int threads_num;
+int nfesLmt;
 
 std::mutex mtx;
 
@@ -320,12 +362,12 @@ string find_neighbour(string a, int poz)
 
 void racunanje()
 {
-    while (vrsta.size() > 0)
+
+    while (nfes < nfesLmt)
     {
         string seq = vrsta.beri();
         if (type == "MF")
         {
-
             double mf1 = MF(seq);
             if (mf1 > mf)
             {
@@ -345,53 +387,22 @@ void racunanje()
     }
 }
 
-template <typename T>
-class SinhroniziranaVrsta
-{
-public:
-    SinhroniziranaVrsta() {}
-    void vstavi(const T &podatki);
-    T beri();
 
-private:
-    SinhroniziranaVrsta(const SinhroniziranaVrsta &);
-    SinhroniziranaVrsta &operator=(const SinhroniziranaVrsta &);
-    std ::list<T> vrsta;
-    std ::mutex mojMutex;
-    std ::conditionVariable mojCv;
-
-    void SinhroniziranaVrsta<T>::vstavi(const T &podatki)
-    {
-        std ::unique_lock<std ::mutex> lck(mojMutex);
-        vrsta.push_back(podatki);
-        mojCv.notify_one();
-    }
-    template <typename T>
-    T SinhroniziranaVrsta<T>::beri()
-    {
-        std ::unique_lock<std ::mutex> lck(mojMutex);
-        while (vrsta.empty())
-            mojCv.wait(lck);
-        T result = vrsta.front();
-        vrsta.pop_front();
-        return result;
-    }
-};
 
 int main(int argc, char **argv)
 {
     l = atoi(argv[1]);
     type = argv[2];
     srand(atoi(argv[3]));
-    int nfesLmt = atoi(argv[4]);
-    threads_num = atoi(argv[5]);
+    nfesLmt = atoi(argv[4]);
+    const int threads_num = atoi(argv[5]);
     cout << "start" << endl;
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    array<thread, threads_num> threads;
+    array<thread, 8> threads;
     for (auto &t : threads)
     {
         t = thread(racunanje);
-        t.join();
+        
     }
 
     while (nfes < nfesLmt)
@@ -405,6 +416,11 @@ int main(int argc, char **argv)
             vrsta.vstavi(bin_sosed);
         }
     }
+    for (auto &t : threads)
+    {
+        t.join();
+        
+    }
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     int runtime = (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) / 1000000.0;
@@ -417,10 +433,11 @@ int main(int argc, char **argv)
     {
         speed = nfes / runtime;
     }
+    
 
     cout << "L: " << l << endl;
     cout << "nfesLmt: " << nfesLmt << endl;
-    cout << "seed: " << l << endl;
+    cout << "seed: " << atoi(argv[3]) << endl;
     cout << "nfes: " << nfes << endl;
     cout << "runtime (sec): " << runtime << endl;
     cout << "speed: " << speed << endl;
