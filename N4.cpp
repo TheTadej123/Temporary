@@ -338,26 +338,28 @@ int main(int argc, char **argv)
             opravila.push_back(bin_sosed);
         }
         omp_set_num_threads(threads_num);
-        [#pragma omp parallel
+        #pragma omp parallel
+        {
         int id = omp_get_thread_num();
-        if (type == "MF")
-        {
-            double mf1 = MF(opravila[id]);
-            if (mf1 > mf)
+            if (type == "MF")
             {
-                mf = mf1;
-                sequence = opravila[id];
+                    double mf1 = MF(opravila[id]);
+                    if (mf1 > mf)
+                    {
+                        mf = mf1;
+                        sequence = opravila[id];
+                    }
             }
-        }
-        else if (type == "PSL")
-        {
-            int psl1 = PSL(opravila[id]);
-            if (psl1 < psl)
+             else if (type == "PSL")
             {
-                psl = psl1;
-                sequence = opravila[id];
-            }
+                int psl1 = PSL(opravila[id]);
+                if (psl1 < psl)
+                {
+                    psl = psl1;
+                    sequence = opravila[id];
+                }
             
+            }
         }
     }
 
