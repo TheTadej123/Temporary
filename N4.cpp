@@ -161,116 +161,6 @@ int Ck(string a, int k)
 
     return out;
 }
-int PSL_threaded(string a)
-{
-    int max = 0;
-    for (int k = 1; k <= a.size() - 2; k++)
-    {
-        if (k == a.size() - 2)
-        {
-            int val1;
-            std::thread t1([&]
-                           { val1 = Ck(a, k); });
-
-            int val2;
-            std::thread t2([&]
-                           { val2 = Ck(a, k + 1); });
-            t1.join();
-            t2.join();
-
-            if (val1 > max)
-            {
-                max = val1;
-            }
-            if (val2 > max)
-            {
-                max = val2;
-            }
-        }
-        else
-        {
-            int val1;
-            std::thread t1([&]
-                           { val1 = Ck(a, k); });
-
-            int val2;
-            std::thread t2([&]
-                           { val2 = Ck(a, k + 1); });
-
-            int val3;
-            std::thread t3([&]
-                           { val3 = Ck(a, k + 2); });
-            t1.join();
-            t2.join();
-            t3.join();
-
-            if (val1 > max)
-            {
-                max = val1;
-            }
-            if (val2 > max)
-            {
-                max = val2;
-            }
-            if (val3 > max)
-            {
-                max = val3;
-            }
-        }
-    }
-
-    return max;
-}
-double MF_threaded(string a)
-{
-    double vsota = 0;
-
-    for (int k = 1; k <= a.size() - 2; k + 3)
-    {
-        if (k == a.size() - 2)
-        {
-            int val1;
-            std::thread t1([&]
-                           { val1 = Ck(a, k); });
-
-            vsota += (val1 * val1);
-
-            int val2;
-            std::thread t2([&]
-                           { val2 = Ck(a, k + 1); });
-            t1.join();
-            t2.join();
-            vsota += (val2 * val2);
-        }
-        else
-        {
-
-            int val1;
-            std::thread t1([&]
-                           { val1 = Ck(a, k); });
-
-            vsota += (val1 * val1);
-
-            int val2;
-            std::thread t2([&]
-                           { val2 = Ck(a, k + 1); });
-
-            vsota += (val2 * val2);
-
-            int val3;
-            std::thread t3([&]
-                           { val3 = Ck(a, k + 2); });
-            t1.join();
-            t2.join();
-            t3.join();
-            vsota += (val3 * val3);
-        }
-    }
-    vsota = vsota * 2;
-
-    double out = (a.size() * a.size()) / (vsota);
-    return out;
-}
 
 int PSL(string a)
 {
@@ -319,13 +209,14 @@ int main(int argc, char **argv)
 {
     int l = atoi(argv[1]);
     int nfesLmt = atoi(argv[4]);
-    const int threads_num = atoi(argv[5]);
+    int threads_num = atoi(argv[5]);
     string sequence;
     double mf = 0;
     int psl = 1000000000;
     srand(atoi(argv[3]));
     string type = argv[2];
     cout << "start" << endl;
+    omp_set_num_threads(threads_num);
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     while (nfes < nfesLmt)
     {
@@ -337,10 +228,10 @@ int main(int argc, char **argv)
             string bin_sosed = find_neighbour(bin_pivot, l - i);
             opravila.push_back(bin_sosed);
         }
-        omp_set_num_threads(threads_num);
+
         #pragma omp parallel
         {
-        int id = omp_get_thread_num();
+        int id=omp_get_thread_num();
             if (type == "MF")
             {
                     double mf1 = MF(opravila[id]);
